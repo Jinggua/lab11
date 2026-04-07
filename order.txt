@@ -1,2 +1,2 @@
-gcc -o lab11_graphics lab11_graphics.c -lplplotd -lm
+gcc -o lab11 lab11.c -lplplotd -lm
 ./lab11_graphics
