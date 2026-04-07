@@ -173,31 +173,87 @@ void draw_containment(void)
     txt(15, 64, "STRUCTURE", 0.65, 15);
 }
 
-/* ---- Reactor ---- */
+/* ---- Reactor - capsule/stadium shape (rectangle + semicircles top & bottom) ---- */
 void draw_reactor(void)
 {
-    /* Outer vessel - purple */
-    fill_circle(12, 32, 8.5, 4, 8);
+    /* Capsule dimensions */
+    PLFLT cx = 12, w = 7, rect_bot = 24, rect_top = 42, r = w;
 
-    /* Inner region - lighter purple */
-    fill_circle(12, 32, 6, 5, -1);
+    /* Outer capsule - dark purple */
+    /* Rectangle body */
+    fill_rect(cx - w, rect_bot, cx + w, rect_top, 4, -1);
+    /* Top semicircle */
+    {
+        int n = 40;
+        PLFLT sx[42], sy[42];
+        sx[0] = cx - w; sy[0] = rect_top;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI * i / n;
+            sx[i+1] = cx - r * cos(a);
+            sy[i+1] = rect_top + r * sin(a);
+        }
+        plcol0(4); plfill(n+2, sx, sy);
+        plcol0(8); plline(n+2, sx, sy);
+    }
+    /* Bottom semicircle */
+    {
+        int n = 40;
+        PLFLT sx[42], sy[42];
+        sx[0] = cx + w; sy[0] = rect_bot;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI + M_PI * i / n;
+            sx[i+1] = cx - r * cos(a);
+            sy[i+1] = rect_bot + r * sin(a);
+        }
+        plcol0(4); plfill(n+2, sx, sy);
+        plcol0(8); plline(n+2, sx, sy);
+    }
+    /* Outline sides */
+    pline(cx - w, rect_bot, cx - w, rect_top, 8, 2.0);
+    pline(cx + w, rect_bot, cx + w, rect_top, 8, 2.0);
 
-    /* Core - red rectangle */
-    fill_rect(9.5, 26, 14.5, 30, 1, 8);
+    /* Inner capsule - lighter purple (smaller) */
+    PLFLT iw = 4.5, ib = 26, it = 40, ir = iw;
+    fill_rect(cx - iw, ib, cx + iw, it, 5, -1);
+    {
+        int n = 30;
+        PLFLT sx[32], sy[32];
+        sx[0] = cx - iw; sy[0] = it;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI * i / n;
+            sx[i+1] = cx - ir * cos(a);
+            sy[i+1] = it + ir * sin(a);
+        }
+        plcol0(5); plfill(n+2, sx, sy);
+    }
+    {
+        int n = 30;
+        PLFLT sx[32], sy[32];
+        sx[0] = cx + iw; sy[0] = ib;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI + M_PI * i / n;
+            sx[i+1] = cx - ir * cos(a);
+            sy[i+1] = ib + ir * sin(a);
+        }
+        plcol0(5); plfill(n+2, sx, sy);
+    }
+
+    /* Core - red rectangle at bottom center */
+    fill_rect(9.5, 22, 14.5, 28, 1, 8);
 
     /* Fuel rods inside core */
     for (int i = 0; i < 4; i++) {
-        pline(10.2 + i * 1.2, 26, 10.2 + i * 1.2, 30, 8, 1.5);
+        pline(10.2 + i * 1.2, 22, 10.2 + i * 1.2, 28, 8, 1.8);
     }
 
     /* White circulation arrows */
-    arr_left(7, 34, 0.7, 15);
-    arr_right(17, 34, 0.7, 15);
-    arr_up(9, 37, 0.7, 15);
-    arr_down(15, 27, 0.7, 15);
+    arr_left(7, 35, 0.7, 15);
+    arr_right(17, 35, 0.7, 15);
+    arr_up(9, 40, 0.7, 15);
+    arr_down(15, 23, 0.7, 15);
 
     /* Label */
-    txt(12, 33, "Reactor", 0.55, 15);
+    txt(12, 35, "Reactor", 0.55, 15);
 }
 
 /* ---- Control Rods ---- */
@@ -217,36 +273,56 @@ void draw_control_rods(void)
     txt_l(3, 52, "Control Rods", 0.45, 15);
 }
 
-/* ---- Steam Generator ---- */
+/* ---- Steam Generator - capsule/stadium shape (tall, blue) ---- */
 void draw_steam_generator(void)
 {
-    /* Main body - blue */
-    fill_rect(20, 26, 27, 55, 6, 8);
+    /* Capsule dimensions */
+    PLFLT cx = 23.5, w = 3.5, bot = 26, top = 52, r = w;
 
-    /* Dome top */
-    int n = 30;
-    PLFLT sx[32], sy[32];
-    sx[0] = 20; sy[0] = 55;
-    for (int i = 0; i <= n; i++) {
-        double a = M_PI * i / n;
-        sx[i + 1] = 23.5 - 3.5 * cos(a);
-        sy[i + 1] = 55 + 4 * sin(a);
-    }
-    plcol0(6);
-    plfill(n + 2, sx, sy);
-    plcol0(8);
-    plline(n + 2, sx, sy);
+    /* Main body rectangle - blue */
+    fill_rect(cx - w, bot, cx + w, top, 6, -1);
 
-    /* Internal U-tubes */
-    for (int i = 0; i < 4; i++) {
-        pline(21.5, 30 + i * 6, 21.5, 33 + i * 6, 15, 0.8);
-        pline(21.5, 33 + i * 6, 25.5, 33 + i * 6, 15, 0.8);
-        pline(25.5, 30 + i * 6, 25.5, 33 + i * 6, 15, 0.8);
+    /* Top semicircle */
+    {
+        int n = 30;
+        PLFLT sx[32], sy[32];
+        sx[0] = cx - w; sy[0] = top;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI * i / n;
+            sx[i+1] = cx - r * cos(a);
+            sy[i+1] = top + r * sin(a);
+        }
+        plcol0(6); plfill(n+2, sx, sy);
+        plcol0(8); plline(n+2, sx, sy);
     }
+    /* Bottom semicircle */
+    {
+        int n = 30;
+        PLFLT sx[32], sy[32];
+        sx[0] = cx + w; sy[0] = bot;
+        for (int i = 0; i <= n; i++) {
+            double a = M_PI + M_PI * i / n;
+            sx[i+1] = cx - r * cos(a);
+            sy[i+1] = bot + r * sin(a);
+        }
+        plcol0(6); plfill(n+2, sx, sy);
+        plcol0(8); plline(n+2, sx, sy);
+    }
+    /* Side outlines */
+    pline(cx - w, bot, cx - w, top, 8, 2.0);
+    pline(cx + w, bot, cx + w, top, 8, 2.0);
+
+    /* Internal U-tube pipes (purple pipe going in and out) */
+    pline(cx - 1, bot - 2, cx - 1, 35, 12, 2.5);
+    pline(cx - 1, 35, cx + 1, 35, 12, 2.5);
+    pline(cx + 1, 35, cx + 1, bot - 2, 12, 2.5);
+
+    /* Up arrow inside showing steam rising */
+    arr_up(cx, 48, 0.7, 15);
 
     /* Label */
-    txt(23.5, 51, "Steam", 0.5, 15);
-    txt(23.5, 48, "Generator", 0.5, 15);
+    txt(cx, 45, "Steam", 0.5, 15);
+    txt(cx, 42, "Generator", 0.5, 15);
 }
 
 /* ---- Steam Line ---- */
@@ -294,58 +370,62 @@ void draw_building(void)
     plwidth(1.0);
 }
 
-/* ---- Turbine - multiple triangular blades fanning out ---- */
+/* ---- Turbine - separate triangles, small to large, left to right ---- */
 void draw_turbine(void)
 {
-    /* Draw multiple triangular fan blades from a point on the left */
-    PLFLT tip_x = 44;   /* narrow tip (left) */
-    PLFLT tip_y = 45;
-    int num_blades = 12;
+    /* Multiple separate triangles pointing left, getting bigger */
+    int num = 6;
+    PLFLT start_x = 43;
+    PLFLT spacing = 3.0;
+    PLFLT center_y = 45;
 
-    /* Overall fan spread */
-    double start_angle = -0.45;
-    double end_angle = 0.45;
+    for (int i = 0; i < num; i++) {
+        /* Each triangle gets taller */
+        PLFLT half_h = 2.0 + i * 1.2;
+        PLFLT base_x = start_x + i * spacing;
+        PLFLT tip_x = base_x + spacing - 0.5;
 
-    for (int i = 0; i < num_blades; i++) {
-        double a1 = start_angle + (end_angle - start_angle) * i / num_blades;
-        double a2 = start_angle + (end_angle - start_angle) * (i + 1) / num_blades;
+        PLFLT tx[3] = {base_x, base_x, tip_x};
+        PLFLT ty[3] = {center_y + half_h, center_y - half_h, center_y};
 
-        PLFLT len = 16.0;
-        PLFLT tx[3], ty[3];
-        tx[0] = tip_x;
-        ty[0] = tip_y;
-        tx[1] = tip_x + len * cos(a1);
-        ty[1] = tip_y + len * sin(a1);
-        tx[2] = tip_x + len * cos(a2);
-        ty[2] = tip_y + len * sin(a2);
-
-        /* Alternate colors for blade effect */
+        /* Alternate dark/light for blade effect */
         if (i % 2 == 0) {
             plcol0(8);
         } else {
-            plcol0(10);
+            plcol0(7);
         }
         plfill(3, tx, ty);
+
+        /* Outline */
         plcol0(8);
-        plline(3, tx, ty);
+        PLFLT bx[4] = {tx[0], tx[1], tx[2], tx[0]};
+        PLFLT by[4] = {ty[0], ty[1], ty[2], ty[0]};
+        plline(4, bx, by);
+
+        /* Horizontal lines inside each triangle for blade detail */
+        int nlines = 3 + i;
+        for (int j = 1; j < nlines; j++) {
+            double frac = (double)j / nlines;
+            PLFLT ly = center_y - half_h + frac * 2 * half_h;
+            /* Find width at this y */
+            double t = fabs(ly - center_y) / half_h;
+            PLFLT lx_right = base_x + (spacing - 0.5) * (1.0 - t);
+            pline(base_x + 0.2, ly, lx_right, ly, 8, 0.5);
+        }
     }
 
-    /* Arrow shape at tip (left-pointing triangle) */
-    PLFLT ax[3] = {tip_x - 4, tip_x, tip_x};
-    PLFLT ay[3] = {tip_y, tip_y + 3, tip_y - 3};
-    plcol0(8);
-    plfill(3, ax, ay);
-    plcol0(15);
-    plline(3, ax, ay);
+    /* Shaft extending right from last triangle to generator */
+    PLFLT shaft_x = start_x + num * spacing;
+    pline(shaft_x, center_y, 62, center_y, 8, 3.0);
 
-    /* Shaft line from steam */
-    pline(40, 45, 44, 45, 8, 3.0);
+    /* Small circle at shaft end */
+    fill_circle(shaft_x + 0.5, center_y, 0.8, 10, 8);
 
     /* Label */
-    txt(52, 45, "Turbine", 0.55, 15);
+    txt(52, 38, "Turbine", 0.55, 15);
 }
 
-/* ---- Generator ---- */
+/* ---- Generator - yellow box with shaft cylinder on right ---- */
 void draw_generator(void)
 {
     /* Main body - yellow */
@@ -354,14 +434,12 @@ void draw_generator(void)
     /* Inner detail - gold/orange square */
     fill_rect(64.5, 42.5, 68.5, 49, 14, 8);
 
-    /* Shaft connecting turbine to generator */
-    pline(60, 45, 62, 45, 8, 3.0);
+    /* Protruding shaft cylinder on the right side */
+    fill_rect(71, 43, 73, 47, 10, 8);   /* shaft rectangle */
+    fill_circle(73, 45, 1.2, 10, 8);     /* shaft end cap circle */
 
-    /* Small circle on shaft */
-    fill_circle(61, 45, 0.6, 10, 8);
-
-    /* Label */
-    txt(66.5, 50.5, "Generator", 0.5, 15);
+    /* Label above */
+    txt(66.5, 53, "Generator", 0.5, 15);
 }
 
 /* ---- Condenser ---- */
