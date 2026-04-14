@@ -104,14 +104,22 @@ int main(int argc, char *argv[]) {
 
     // ----- CONTAINMENT BUILDING (gray rectangle with dome) -----
     draw_rect(5, 10, 30, 65, 7);                     // main box
-    // dome (half circle approximation)
-    for (int i = 0; i <= 20; i++) {
-        double a = M_PI * i / 20.0;
-        PLFLT x1 = 5 + 25 * (1 - cos(a)) / 2.0;
-        PLFLT y1 = 65 + 12 * sin(a);
-        if (i == 0) plmove(x1, y1);
-        else plline(1, &x1, &y1);
+
+    // dome: half circle using plfill (no plmove needed)
+    int n = 30;
+    PLFLT dome_x[33], dome_y[33];
+    dome_x[0] = 5;   dome_y[0] = 65;
+    for (int i = 0; i <= n; i++) {
+        double a = M_PI * i / n;
+        dome_x[i+1] = 5 + 25 * (1 - cos(a)) / 2.0;
+        dome_y[i+1] = 65 + 12 * sin(a);
     }
+    dome_x[n+2] = 30; dome_y[n+2] = 65;
+    plcol0(7);
+    plfill(n+3, dome_x, dome_y);
+    plcol0(0);
+    plline(n+3, dome_x, dome_y);
+
     draw_text(17.5, 70, "Containment", 0.55, 1);
 
     // ----- REACTOR (simple purple capsule) -----
@@ -179,25 +187,25 @@ int main(int argc, char *argv[]) {
 
     // ----- COOLING TOWER (hyperbolic shape) -----
     PLFLT tx[100], ty[100];
-    int n = 40;
-    for (int i = 0; i <= n; i++) {
-        double t = (double)i / n;
+    int m = 40;
+    for (int i = 0; i <= m; i++) {
+        double t = (double)i / m;
         double yy = 12 + t * 55;
         double r = 5.5 - 3.5 * t + 2.0 * t * t;
         tx[i] = 80 + r;
         ty[i] = yy;
     }
-    for (int i = 0; i <= n; i++) {
-        double t = (double)i / n;
+    for (int i = 0; i <= m; i++) {
+        double t = (double)i / m;
         double yy = 67 - t * 55;
         double r = 5.5 - 3.5 * (1-t) + 2.0 * (1-t)*(1-t);
-        tx[n+1+i] = 80 - r;
-        ty[n+1+i] = yy;
+        tx[m+1+i] = 80 - r;
+        ty[m+1+i] = yy;
     }
     plcol0(7);
-    plfill(2*n+2, tx, ty);
+    plfill(2*m+2, tx, ty);
     plcol0(0);
-    plline(2*n+2, tx, ty);
+    plline(2*m+2, tx, ty);
     draw_text(80, 73, "Cooling", 0.55, 1);
     draw_text(80, 69, "Tower", 0.55, 1);
 
