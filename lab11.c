@@ -11,15 +11,14 @@
 #include <plplot/plplot.h>
 #include <math.h>
 
-/* helper: draw a filled rectangle */
+/* helper: draw a filled rectangle (fixed array bounds) */
 void draw_rect(PLFLT x1, PLFLT y1, PLFLT x2, PLFLT y2, int color) {
-    PLFLT x[4] = {x1, x2, x2, x1};
-    PLFLT y[4] = {y1, y1, y2, y2};
+    PLFLT x[5] = {x1, x2, x2, x1, x1};
+    PLFLT y[5] = {y1, y1, y2, y2, y1};
     plcol0(color);
-    plfill(4, x, y);
-    plcol0(0);          // black outline
-    plline(5, x, y);
-    x[4] = x1; y[4] = y1;
+    plfill(4, x, y);          // fill uses first 4 points
+    plcol0(0);                // black outline
+    plline(5, x, y);          // closed outline uses 5 points
 }
 
 /* helper: draw a filled circle */
