@@ -2,24 +2,23 @@
  * Lab 11: Graphics
  * EETG3024: Advanced Embedded Systems
  *
- * Simple industrial process diagram (Nuclear Power Plant)
  * 
- * Compile: gcc -o lab11_graphics lab11_graphics.c $(pkg-config --cflags --libs plplot) -lm
- * Run:     ./lab11_graphics
+ * 
+ * Compile: gcc -o lab11 lab11.c $(pkg-config --cflags --libs plplot) -lm
+ * Run:     ./lab11
  */
 
 #include <plplot/plplot.h>
 #include <math.h>
 
-/* helper: draw a filled rectangle */
+/* helper: draw a filled rectangle (fixed array bounds) */
 void draw_rect(PLFLT x1, PLFLT y1, PLFLT x2, PLFLT y2, int color) {
-    PLFLT x[4] = {x1, x2, x2, x1};
-    PLFLT y[4] = {y1, y1, y2, y2};
+    PLFLT x[5] = {x1, x2, x2, x1, x1};
+    PLFLT y[5] = {y1, y1, y2, y2, y1};
     plcol0(color);
-    plfill(4, x, y);
-    plcol0(0);          // black outline
-    plline(5, x, y);
-    x[4] = x1; y[4] = y1;
+    plfill(4, x, y);          // fill uses first 4 points
+    plcol0(0);                // black outline
+    plline(5, x, y);          // closed outline uses 5 points
 }
 
 /* helper: draw a filled circle */
@@ -104,14 +103,22 @@ int main(int argc, char *argv[]) {
 
     // ----- CONTAINMENT BUILDING (gray rectangle with dome) -----
     draw_rect(5, 10, 30, 65, 7);                     // main box
-    // dome (half circle approximation)
-    for (int i = 0; i <= 20; i++) {
-        double a = M_PI * i / 20.0;
-        PLFLT x1 = 5 + 25 * (1 - cos(a)) / 2.0;
-        PLFLT y1 = 65 + 12 * sin(a);
-        if (i == 0) plmove(x1, y1);
-        else plline(1, &x1, &y1);
+
+    // dome: half circle using plfill (no plmove needed)
+    int n = 30;
+    PLFLT dome_x[33], dome_y[33];
+    dome_x[0] = 5;   dome_y[0] = 65;
+    for (int i = 0; i <= n; i++) {
+        double a = M_PI * i / n;
+        dome_x[i+1] = 5 + 25 * (1 - cos(a)) / 2.0;
+        dome_y[i+1] = 65 + 12 * sin(a);
     }
+    dome_x[n+2] = 30; dome_y[n+2] = 65;
+    plcol0(7);
+    plfill(n+3, dome_x, dome_y);
+    plcol0(0);
+    plline(n+3, dome_x, dome_y);
+
     draw_text(17.5, 70, "Containment", 0.55, 1);
 
     // ----- REACTOR (simple purple capsule) -----
@@ -121,10 +128,10 @@ int main(int argc, char *argv[]) {
     draw_text(15, 40, "Reactor", 0.55, 1);
 
     // ----- CONTROL RODS (three lines above reactor) -----
-    thick_line(11, 48, 11, 60, 0, 2.5);
-    thick_line(15, 48, 15, 60, 0, 2.5);
-    thick_line(19, 48, 19, 60, 0, 2.5);
-    draw_text(10, 62, "Control Rods", 0.5, 1);
+    // thick_line(11, 48, 11, 60, 0, 2.5);
+    // thick_line(15, 48, 15, 60, 0, 2.5);
+    // thick_line(19, 48, 19, 60, 0, 2.5);
+    // draw_text(10, 62, "Control Rods", 0.5, 1);
 
     // ----- STEAM GENERATOR (tall blue capsule) -----
     draw_rect(35, 30, 43, 58, 6);
@@ -134,29 +141,17 @@ int main(int argc, char *argv[]) {
     draw_text(39, 44, "Gen.", 0.55, 1);
 
     // ----- STEAM LINE (thick pipe) -----
-    thick_line(39, 62, 39, 68, 3, 4.0);
-    thick_line(39, 68, 65, 68, 3, 4.0);
-    thick_line(65, 62, 65, 68, 3, 4.0);
-    draw_text(52, 70, "Steam Line", 0.55, 1);
+    // thick_line(39, 62, 39, 68, 3, 4.0);
+    // thick_line(39, 68, 65, 68, 3, 4.0);
+    // thick_line(65, 62, 65, 68, 3, 4.0);
+    // draw_text(52, 70, "Steam Line", 0.55, 1);
 
     // ----- TURBINE BUILDING (big rectangle) -----
     draw_rect(45, 8, 75, 58, 10);                  // light gray building
     draw_text(60, 60, "Turbine / Generator Building", 0.6, 1);
 
     // ----- TURBINE (simple fan-like triangles) -----
-    for (int i = 0; i < 5; i++) {
-        PLFLT xb = 48 + i * 3.5;
-        PLFLT yc = 45;
-        PLFLT h = 2.5 + i * 0.8;
-        PLFLT xt[3] = {xb, xb, xb + 2.5};
-        PLFLT yt[3] = {yc + h, yc - h, yc};
-        plcol0(1);
-        plfill(3, xt, yt);
-        plcol0(0);
-        plline(3, xt, yt);
-        xt[2] = xt[0]; yt[2] = yt[0];
-        plline(4, xt, yt);
-    }
+    
     draw_text(58, 38, "Turbine", 0.55, 1);
 
     // ----- GENERATOR (yellow box) -----
@@ -172,32 +167,32 @@ int main(int argc, char *argv[]) {
     }
 
     // ----- PUMPS (yellow circles) -----
-    draw_circle(25, 15, 3, 2);
-    draw_text(25, 11, "Pump", 0.5, 1);
+    draw_circle(25, 20, 3, 2);
+    draw_text(25, 15, "Pump", 0.5, 1);
     draw_circle(42, 40, 3, 2);
     draw_text(42, 36, "Pump", 0.5, 1);
 
     // ----- COOLING TOWER (hyperbolic shape) -----
     PLFLT tx[100], ty[100];
-    int n = 40;
-    for (int i = 0; i <= n; i++) {
-        double t = (double)i / n;
+    int m = 40;
+    for (int i = 0; i <= m; i++) {
+        double t = (double)i / m;
         double yy = 12 + t * 55;
         double r = 5.5 - 3.5 * t + 2.0 * t * t;
         tx[i] = 80 + r;
         ty[i] = yy;
     }
-    for (int i = 0; i <= n; i++) {
-        double t = (double)i / n;
+    for (int i = 0; i <= m; i++) {
+        double t = (double)i / m;
         double yy = 67 - t * 55;
         double r = 5.5 - 3.5 * (1-t) + 2.0 * (1-t)*(1-t);
-        tx[n+1+i] = 80 - r;
-        ty[n+1+i] = yy;
+        tx[m+1+i] = 80 - r;
+        ty[m+1+i] = yy;
     }
     plcol0(7);
-    plfill(2*n+2, tx, ty);
+    plfill(2*m+2, tx, ty);
     plcol0(0);
-    plline(2*n+2, tx, ty);
+    plline(2*m+2, tx, ty);
     draw_text(80, 73, "Cooling", 0.55, 1);
     draw_text(80, 69, "Tower", 0.55, 1);
 
@@ -212,30 +207,30 @@ int main(int argc, char *argv[]) {
 
     // ----- COOLING WATER PIPES (cyan) -----
     thick_line(70, 18, 78, 18, 9, 3.0);
-    arrow_right(73, 18, 1.0, 1);
+    // arrow_right(73, 18, 1.0, 1);
     thick_line(70, 28, 78, 28, 9, 3.0);
-    arrow_right(73, 28, 1.0, 1);
+    //arrow_right(73, 28, 1.0, 1);
     thick_line(50, 18, 42, 18, 9, 3.0);
-    arrow_left(46, 18, 1.0, 1);
+    //arrow_left(46, 18, 1.0, 1);
     thick_line(42, 18, 42, 37, 9, 3.0);
-    arrow_up(42, 27, 1.0, 1);
+   // arrow_up(42, 27, 1.0, 1);
     thick_line(90, 28, 90, 50, 9, 3.0);
-    arrow_up(90, 40, 1.0, 1);
+   // arrow_up(90, 40, 1.0, 1);
     thick_line(80, 50, 90, 50, 9, 3.0);
-    arrow_right(84, 50, 1.0, 1);
+    // arrow_right(84, 50, 1.0, 1);
 
     // ----- PRIMARY PIPES (dark purple) -----
     thick_line(9, 32, 9, 20, 4, 3.5);
     thick_line(9, 20, 22, 20, 4, 3.5);
-    thick_line(22, 20, 22, 30, 4, 3.5);
+    //thick_line(22, 20, 22, 30, 4, 3.5);
     thick_line(35, 30, 35, 20, 4, 3.5);
     thick_line(35, 20, 28, 20, 4, 3.5);
     arrow_down(9, 26, 0.8, 1);
-    arrow_up(22, 24, 0.8, 1);
+    //arrow_up(22, 24, 0.8, 1);
     arrow_up(35, 26, 0.8, 1);
 
     // ----- SWITCHYARD (simple towers and lines) -----
-    draw_text(62, 76, "Switchyard", 0.55, 1);
+    // draw_text(62, 76, "Switchyard", 0.55, 1);
     // two towers
     for (int x = 58; x <= 66; x += 8) {
         thick_line(x, 60, x, 74, 1, 1.5);
@@ -243,17 +238,7 @@ int main(int argc, char *argv[]) {
         thick_line(x, 74, x+1, 77, 1, 1.5);
         thick_line(x+2, 74, x+1, 77, 1, 1.5);
     }
-    // power lines (sagging)
-    for (int l = 0; l < 3; l++) {
-        PLFLT px[20], py[20];
-        for (int i = 0; i < 20; i++) {
-            double t = i / 19.0;
-            px[i] = 59 + 8 * t;
-            py[i] = 73 - l*2.5 - 2.5 * sin(3.14159 * t);
-        }
-        thick_line(59, 73-l*2.5, 67, 73-l*2.5, 2, 1.5);
-    }
-    thick_line(74, 46, 62, 60, 2, 2.0);
+    
 
     // ----- WATER INTAKE (arrow from bottom) -----
     thick_line(55, 0, 55, 8, 9, 4.0);
